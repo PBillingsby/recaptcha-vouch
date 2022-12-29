@@ -1,11 +1,47 @@
 import Head from 'next/head'
-import Image from 'next/image'
+import React, { useState, useRef } from 'react'
 import { Inter } from '@next/font/google'
 import styles from '../styles/Home.module.css'
+import ReCAPTCHA from 'react-google-recaptcha'
+import axios from 'axios'
+import { CircleCheck } from 'tabler-icons-react';
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const [address, setAddress] = useState<any>()
+  const [validated, setValidated] = useState<any>()
+
+  const captchaRef = useRef<any>(null)
+
+  const connect = async () => {
+    if (!address) {
+      if (!window.arweaveWallet) {
+        window.open("https://arconnect.io", "_blank");
+      }
+      await arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"], {
+        name: "Vouch DAO v0",
+      });
+      setAddress(await arweaveWallet.getActiveAddress());
+    }
+  }
+
+  const handleSubmit = async () => {
+    try {
+      const token = captchaRef.current?.getValue();
+      await axios.post('api/register', { token, address })
+        .then(res => {
+          console.log(res)
+          setValidated(res)
+        })
+        .catch((error) => {
+          console.log(error);
+        })
+      setTimeout(() => captchaRef.current?.reset(), 500);
+    } catch (err) {
+      console.log(err)
+    }
+  }
   return (
     <>
       <Head>
@@ -14,110 +50,65 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
-        <div className={styles.description}>
-          <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>pages/index.tsx</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
-        </div>
-
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-          <div className={styles.thirteen}>
-            <Image
-              src="/thirteen.svg"
-              alt="13"
-              width={40}
-              height={31}
-              priority
-            />
-          </div>
-        </div>
-
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+      <div className={styles.container}>
+        <h2 className="text-5xl text-center mt-12 font-bold">Get VOUCHED</h2>
+        <main className={styles.main}>
+          <p className="max-w-lg text-center">Vouch reCaptcha Service is a registered server of Vouch DAO, this server allows users to leverage the power of reCaptcha to create a Vouch Record for Web of Value Services.</p>
+          {
+            address ? (
+              <div className="mt-8">
+                {
+                  false // replace with condition if a user is vouched by recaptcha
+                    ? (
+                      <div className="flex gap-2">
+                        <CircleCheck size={28} strokeWidth={2} color={'#50bf40'} />
+                        <p className="pt-1 font-bold text-[#50bf40]">Already Vouched</p>
+                      </div>
+                    )
+                    : validated && validated.status === 200
+                      ? (true ?
+                        <button
+                          type="submit"
+                          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                        >
+                          Vouch For {`${address.slice(0, 8)}...${address.slice(
+                            address.length - 8
+                          )}`}
+                        </button>
+                        :
+                        <div role="status">
+                          <svg aria-hidden="true" className="mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
+                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
+                          </svg>
+                        </div>
+                      )
+                      : (
+                        <ReCAPTCHA
+                          size="normal"
+                          className={validated ? 'hidden' : ''}
+                          onChange={handleSubmit}
+                          ref={captchaRef}
+                          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+                        />
+                      )
+                }
+              </div>
+            )
+              :
+              (
+                <div>
+                  <button type="button" onClick={connect} className="mx-10 my-4 bg-black border border-white hover:bg-white hover:text-black hover:border hover:border-black text-white font-bold py-4 px-10 rounded-full">Get Vouched</button>
+                  <button className="mx-10 my-4 bg-white border border-black hover:bg-black hover:border hover:border-white hover:text-white text-black font-bold py-4 px-10 rounded-full">
+                    <a href="https://vouch-dao.arweave.dev" target="_blank">
+                      Learn More
+                    </a>
+                  </button>
+                </div>
+              )
+          }
+        </main>
+      </div >
     </>
   )
 }
