@@ -1,7 +1,7 @@
 import Bundlr from '@bundlr-network/client'
 import fs from 'fs'
 
-const wallet = JSON.parse(fs.readFileSync('../wallet.json', 'utf-8'))
+const wallet = JSON.parse(fs.readFileSync('../../wallet.json', 'utf-8'))
 const bundlr = new Bundlr('https://node2.bundlr.network', 'arweave', wallet)
 
 export default async function (ctx: { address: string }) {
@@ -27,6 +27,6 @@ export default async function (ctx: { address: string }) {
     // @ts-ignore
     return { ...ctx, transaction: result.id }
   } catch (err) {
-    console.error(err)
+    console.error
   }
 }

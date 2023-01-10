@@ -5,7 +5,7 @@ import ReCAPTCHA from 'react-google-recaptcha'
 import Arweave from 'arweave'
 import axios from 'axios'
 import { CircleCheck } from 'tabler-icons-react';
-import { isVouched } from '../utils/vouched'
+import { isVouched } from '../utils/isVouched'
 
 const arweave = Arweave.init({
   protocol: 'https',
@@ -34,11 +34,9 @@ export default function Home() {
   const handleSubmit = async () => {
     try {
       const token = captchaRef.current?.getValue();
-      const isVouchedBy: boolean = await isVouched(address!)
-      setVouched(isVouchedBy)
+      await checkVouch(address!)
       await axios.post('api/register', { token, address })
         .then(res => {
-          console.log(res)
           setValidated(res)
         })
         .catch((error) => {
@@ -51,20 +49,26 @@ export default function Home() {
   }
 
   const vouchAddress = async () => {
-    // get signature
     const tx = await arweave.createTransaction({
       data: JSON.stringify({ address })
     })
 
     await arweave.transactions.sign(tx)
     await axios.post('api/vouch', tx)
-      .then(res => {
-        console.log("---------------", res)
+      .then(async (res) => {
+        if (res.status === 200) {
+          await checkVouch(address!)
+        }
         return res.status
       })
       .catch((error) => {
         console.log(error);
       })
+  }
+
+  const checkVouch = async (address: string) => {
+    const isVouchedBy: boolean = await isVouched(address!)
+    setVouched(isVouchedBy)
   }
   return (
     <>

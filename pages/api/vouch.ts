@@ -1,7 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
 import express from "express";
-const router = express.Router();
 const app = express();
 import cors from 'cors';
 
@@ -10,11 +9,6 @@ import vouch from '../../utils/vouch'
 import dao from '../../utils/dao'
 
 app.use(cors());
-
-//Parse data
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use("/", router);
 
 export default async function handler(
   req: NextApiRequest,
