@@ -33,7 +33,6 @@ export default async function handler(
 
   //check response status and send back to the client-side
   if (res.status(200)) {
-    deployTxn(address)
     res.status(200).json({
       status: "success",
       message: "Enquiry submitted successfully",
@@ -46,11 +45,3 @@ export default async function handler(
   }
 }
 
-const deployTxn = (address: string) => {
-  try {
-    console.log("DEPLOYING TXN TO: ", address)
-
-  } catch (err) {
-    console.log(err)
-  }
-}

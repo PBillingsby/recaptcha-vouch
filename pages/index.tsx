@@ -1,17 +1,22 @@
 import Head from 'next/head'
 import React, { useState, useRef } from 'react'
-import { Inter } from '@next/font/google'
 import styles from '../styles/Home.module.css'
 import ReCAPTCHA from 'react-google-recaptcha'
+import Arweave from 'arweave'
 import axios from 'axios'
 import { CircleCheck } from 'tabler-icons-react';
+import { isVouched } from '../utils/vouched'
 
-const inter = Inter({ subsets: ['latin'] })
+const arweave = Arweave.init({
+  protocol: 'https',
+  port: '443',
+  host: 'arweave.net'
+})
 
 export default function Home() {
-  const [address, setAddress] = useState<any>()
+  const [address, setAddress] = useState<string | undefined>()
   const [validated, setValidated] = useState<any>()
-
+  const [vouched, setVouched] = useState<boolean>()
   const captchaRef = useRef<any>(null)
 
   const connect = async () => {
@@ -19,16 +24,18 @@ export default function Home() {
       if (!window.arweaveWallet) {
         window.open("https://arconnect.io", "_blank");
       }
-      await arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"], {
+      await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"], {
         name: "Vouch DAO v0",
       });
-      setAddress(await arweaveWallet.getActiveAddress());
+      setAddress(await window.arweaveWallet.getActiveAddress());
     }
   }
 
   const handleSubmit = async () => {
     try {
       const token = captchaRef.current?.getValue();
+      const isVouchedBy: boolean = await isVouched(address!)
+      setVouched(isVouchedBy)
       await axios.post('api/register', { token, address })
         .then(res => {
           console.log(res)
@@ -41,6 +48,23 @@ export default function Home() {
     } catch (err) {
       console.log(err)
     }
+  }
+
+  const vouchAddress = async () => {
+    // get signature
+    const tx = await arweave.createTransaction({
+      data: JSON.stringify({ address })
+    })
+
+    await arweave.transactions.sign(tx)
+    await axios.post('api/vouch', tx)
+      .then(res => {
+        console.log("---------------", res)
+        return res.status
+      })
+      .catch((error) => {
+        console.log(error);
+      })
   }
   return (
     <>
@@ -58,40 +82,32 @@ export default function Home() {
             address ? (
               <div className="mt-8">
                 {
-                  false // replace with condition if a user is vouched by recaptcha
+                  vouched
                     ? (
                       <div className="flex gap-2">
                         <CircleCheck size={28} strokeWidth={2} color={'#50bf40'} />
                         <p className="pt-1 font-bold text-[#50bf40]">Already Vouched</p>
                       </div>
                     )
-                    : validated && validated.status === 200
-                      ? (true ?
-                        <button
-                          type="submit"
-                          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-                        >
-                          Vouch For {`${address.slice(0, 8)}...${address.slice(
-                            address.length - 8
-                          )}`}
-                        </button>
-                        :
-                        <div role="status">
-                          <svg aria-hidden="true" className="mr-2 w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
-                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
-                          </svg>
-                        </div>
-                      )
-                      : (
-                        <ReCAPTCHA
-                          size="normal"
-                          className={validated ? 'hidden' : ''}
-                          onChange={handleSubmit}
-                          ref={captchaRef}
-                          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-                        />
-                      )
+                    :
+                    <div>
+                      <button
+                        onClick={vouchAddress}
+                        type="submit"
+                        className={`${!validated ? 'hidden' : ''} text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800`}
+                      >
+                        Vouch For {`${address.slice(0, 8)}...${address.slice(
+                          address.length - 8
+                        )}`}
+                      </button>
+                      <ReCAPTCHA
+                        size="normal"
+                        className={validated ? 'hidden' : ''}
+                        onChange={handleSubmit}
+                        ref={captchaRef}
+                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+                      />
+                    </div>
                 }
               </div>
             )
