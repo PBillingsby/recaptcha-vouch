@@ -1,6 +1,13 @@
 import Bundlr from '@bundlr-network/client'
+import fs from 'fs'
 
-const wallet = JSON.parse(Buffer.from(process.env.NEXT_PUBLIC_KEYFILE!, 'base64').toString('utf-8'))
+let wallet: any
+if (process.env.NODE_ENV === 'production') {
+  wallet = JSON.parse(Buffer.from(process.env.NEXT_PUBLIC_KEYFILE!, 'base64').toString('utf-8'))
+}
+else {
+  wallet = JSON.parse(fs.readFileSync('../../wallet.json', 'utf-8'))
+}
 const bundlr = new Bundlr('https://node2.bundlr.network', 'arweave', wallet)
 
 export default async function (ctx: { address: string }) {
