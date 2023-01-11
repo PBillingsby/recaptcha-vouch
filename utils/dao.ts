@@ -1,7 +1,6 @@
 import { WarpFactory } from 'warp-contracts'
-import fs from 'fs'
 
-const wallet = JSON.parse(fs.readFileSync('../../wallet.json', 'utf-8'))
+const wallet = JSON.parse(Buffer.from(process.env.NEXT_PUBLIC_KEYFILE!, 'base64').toString('utf-8'))
 const VOUCH = '_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk'
 const warp = WarpFactory.forMainnet()
 
