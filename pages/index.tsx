@@ -120,7 +120,7 @@ export default function Home() {
                 <div>
                   <button type="button" onClick={connect} className="mx-10 my-4 bg-black border border-white hover:bg-white hover:text-black hover:border hover:border-black text-white font-bold py-4 px-10 rounded-full">Get Vouched</button>
                   <button className="mx-10 my-4 bg-white border border-black hover:bg-black hover:border hover:border-white hover:text-white text-black font-bold py-4 px-10 rounded-full">
-                    <a href="https://vouch-dao.arweave.dev" target="_blank">
+                    <a href="https://vouch-dao.arweave.dev" target="_blank" rel="noreferrer" >
                       Learn More
                     </a>
                   </button>
