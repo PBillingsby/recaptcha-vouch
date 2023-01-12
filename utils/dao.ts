@@ -1,4 +1,4 @@
-import { WarpFactory } from 'warp-contracts'
+import { WarpFactory, defaultCacheOptions } from 'warp-contracts'
 import fs from 'fs'
 
 let wallet: any
@@ -9,7 +9,7 @@ else {
   wallet = JSON.parse(fs.readFileSync((process.cwd(), "wallet.json"), 'utf-8'))
 }
 const VOUCH = '_z0ch80z_daDUFqC9jHjfOL8nekJcok4ZRkE_UesYsk'
-const warp = WarpFactory.forMainnet()
+const warp = WarpFactory.forMainnet({ ...defaultCacheOptions, inMemory: true })
 
 export default async function (ctx: { address: string, transaction: string }) {
   const vouchContract = warp.contract(VOUCH)
