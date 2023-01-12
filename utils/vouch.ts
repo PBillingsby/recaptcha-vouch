@@ -28,11 +28,11 @@ export default async function (ctx: { address: string }) {
 
   // APPROACH 1
   try {
-    // const tx = bundlr.createTransaction(data, { tags })
-    // await tx.sign()
-    // const result = await tx.upload()
+    const tx = bundlr.createTransaction(data, { tags })
+    await tx.sign()
+    const result = await tx.upload()
     // @ts-ignore
-    // return { ...ctx, transaction: result.id }
+    return { ...ctx, transaction: result.id }
   } catch (err) {
     console.error
   }
