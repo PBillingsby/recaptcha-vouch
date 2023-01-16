@@ -33,6 +33,7 @@
     "@types/express": "^4.17.15",
     "@types/react-google-recaptcha": "^2.1.5",
     "arweave": "^1.12.2",
+    "arweave-wallet-connector": "^0.0.31",
     "tabler-icons-react": "^1.56.0",
     "warp-contracts": "^1.2.44"
   }
