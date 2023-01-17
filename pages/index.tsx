@@ -8,6 +8,7 @@ import { ArweaveWebWallet } from "arweave-wallet-connector";
 import styles from "../styles/Home.module.css";
 import { CircleCheck, Wallet } from "tabler-icons-react";
 import { isVouched } from "../utils/isVouched";
+import ConnectWallet from "../components/ConnectWalletModal";
 
 const arweave = Arweave.init({
   protocol: "https",
@@ -157,46 +158,21 @@ export default function Home() {
                   Learn More
                 </a>
               </button>
-              {modalOpen ? (
-                <>
-                  <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
-                    <div className="relative w-auto my-6 mx-auto max-w-3xl">
-                      <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
-                        <div className="flex m-auto">
-                          <Wallet size={64} strokeWidth={2} color={"black"} />
-                        </div>
-                        <div className="w-full">
-                          <button
-                            className="mx-10 my-4 bg-black border border-white hover:bg-white hover:text-black hover:border hover:border-black text-white font-bold py-4 px-10 rounded-full"
-                            onClick={arconnect}
-                          >
-                            ArConnect
-                          </button>
-                          <button
-                            onClick={arwallet}
-                            className="mx-10 my-4 bg-white border border-black hover:bg-black hover:border hover:border-white hover:text-white text-black font-bold py-4 px-10 rounded-full btn rounded-full bg-[#E4E6F1] text-black hover:bg-gray-400"
-                          >
-                            Arweave.app
-                          </button>
-                        </div>
-                        {/*footer*/}
-                        <button
-                          className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                          type="button"
-                          onClick={() => setModalOpen(false)}
-                        >
-                          X
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
-                </>
-              ) : null}
             </div>
           )}
         </main>
       </div>
+
+      {modalOpen ? (
+        <ConnectWallet
+          arConnect={arconnect}
+          arWallet={arwallet}
+          setModalOpen={setModalOpen}
+          modalOpen={modalOpen}
+        />
+      ) : (
+        ""
+      )}
     </>
   );
 }
