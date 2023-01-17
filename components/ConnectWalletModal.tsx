@@ -5,12 +5,14 @@ interface Props {
   modalOpen: boolean;
   arConnect: () => void;
   arWallet: () => void;
+  isLoading: boolean;
 }
 
 export default function ConnectWallet({
   setModalOpen,
   arConnect,
   arWallet,
+  isLoading,
 }: Props) {
   return (
     <>
@@ -38,20 +40,24 @@ export default function ConnectWallet({
               Select your preferred wallet below:
             </p>
 
-            <div className="w-full flex flex-col gap-4 mt-6">
-              <button
-                className="bg-black border border-white hover:bg-white hover:text-black hover:border hover:border-black text-white font-bold py-4 px-10 rounded-full"
-                onClick={arConnect}
-              >
-                ArConnect
-              </button>
-              <button
-                onClick={arWallet}
-                className="border border-black hover:border hover:border-white hover:text-white font-bold py-4 px-10 btn rounded-full bg-[#E4E6F1] text-black hover:bg-gray-400"
-              >
-                Arweave.app
-              </button>
-            </div>
+            {isLoading ? (
+              <p className="text-black font-semibold ml-4 text-center mt-10">Verifying...</p>
+            ) : (
+              <div className="w-full flex flex-col gap-4 mt-6">
+                <button
+                  className="bg-black border border-white hover:bg-white hover:text-black hover:border hover:border-black text-white font-bold py-4 px-10 rounded-full"
+                  onClick={arConnect}
+                >
+                  ArConnect
+                </button>
+                <button
+                  onClick={arWallet}
+                  className="border border-black hover:border hover:border-white hover:text-white font-bold py-4 px-10 btn rounded-full bg-[#E4E6F1] text-black hover:bg-gray-400"
+                >
+                  Arweave.app
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

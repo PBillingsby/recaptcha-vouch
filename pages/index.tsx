@@ -17,6 +17,7 @@ const arweave = Arweave.init({
 });
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [address, setAddress] = useState<string | undefined>();
   const [validated, setValidated] = useState<any>();
   const [vouched, setVouched] = useState<boolean>();
@@ -24,7 +25,11 @@ export default function Home() {
   const captchaRef = useRef<any>(null);
 
   const arconnect = async () => {
-    if (!address) {
+    setIsLoading(true);
+    if (address) {
+      setModalOpen(false);
+      setIsLoading(false);
+    } else {
       if (!window.arweaveWallet) {
         window.open("https://arconnect.io", "_blank");
       }
@@ -34,11 +39,15 @@ export default function Home() {
           name: "Vouch DAO v0",
         }
       );
+
       setAddress(await window.arweaveWallet.getActiveAddress());
+      setModalOpen(false);
+      setIsLoading(false);
     }
   };
 
   const arwallet = async () => {
+    setIsLoading(true);
     const wallet = new ArweaveWebWallet({
       name: "img",
     });
@@ -46,6 +55,8 @@ export default function Home() {
     await wallet.connect();
     const addr = await window.arweaveWallet.getActiveAddress();
     setAddress(addr);
+    setIsLoading(false);
+    setModalOpen(false);
   };
 
   const handleSubmit = async () => {
@@ -89,6 +100,7 @@ export default function Home() {
     const isVouchedBy: boolean = await isVouched(address!);
     setVouched(isVouchedBy);
   };
+
   return (
     <>
       <Head>
@@ -169,6 +181,7 @@ export default function Home() {
           arWallet={arwallet}
           setModalOpen={setModalOpen}
           modalOpen={modalOpen}
+          isLoading={isLoading}
         />
       ) : (
         ""
